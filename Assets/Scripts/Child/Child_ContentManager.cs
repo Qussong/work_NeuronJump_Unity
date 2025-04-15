@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
+/*
 namespace GH
 {
     public enum EContentState
@@ -18,7 +19,7 @@ namespace GH
     /// <summary>
     /// 
     /// </summary>
-    public class Child_ContentManager : ContentManager
+    public class Child_ContentManager : ContentManager<Child_ContentManager>
     {
         public void Start()
         {
@@ -58,3 +59,4 @@ namespace GH
 
     }
 }
+*/

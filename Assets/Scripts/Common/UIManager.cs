@@ -8,7 +8,7 @@ namespace GH
     /// <summary>
     ///     
     /// </summary>
-    public abstract class UIManager : SingletonTemplate<UIManager>, IUIManager, IScreenInfo//, IScenePersistent
+    public abstract class UIManager<T> : SingletonTemplate<T>, IUIManager, IScreenInfo where T : MonoBehaviour
     {
         // UI Manager Interface
         #region IUIManager
@@ -130,9 +130,9 @@ namespace GH
 
         #region UI Status Method
 
-        public virtual bool HasUIElement<T>(T enumId) where T : Enum
+        public virtual bool HasUIElement<E>(E enumId) where E : Enum
         {
-            if (enumId is T page)
+            if (enumId is E page)
             {
                 return HasUIElement(Convert.ToInt32(page));
             }
@@ -151,9 +151,9 @@ namespace GH
 
         #region UI Active Method
 
-        public virtual void ActivateUI<T>(T enumId) where T : Enum
+        public virtual void ActivateUI<E>(E enumId) where E : Enum
         {
-            if (enumId is T page)
+            if (enumId is E page)
             {
                 ActivateUI(Convert.ToInt32(page));
             }
@@ -167,9 +167,9 @@ namespace GH
             panel.SetActive(true);
         }
 
-        public virtual void DeactivateUI<T>(T enumId) where T : Enum
+        public virtual void DeactivateUI<E>(E enumId) where E : Enum
         {
-            if (enumId is T page)
+            if (enumId is E page)
             {
                 DeactivateUI(Convert.ToInt32(page));
             }

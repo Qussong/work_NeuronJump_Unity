@@ -9,7 +9,7 @@ namespace GH
     /// <summary>
     /// 
     /// </summary>
-    public abstract class ContentManager : SingletonTemplate<ContentManager>, IContentManager
+    public abstract class ContentManager<T> : SingletonTemplate<T>, IContentManager where T : MonoBehaviour
     {
         public string CurContentState { get; set; }
 

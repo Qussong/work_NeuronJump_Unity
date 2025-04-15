@@ -8,7 +8,7 @@ namespace GH
     /// <summary>
     /// 
     /// </summary>
-    public abstract class AdminManager : SingletonTemplate<AdminManager>, IAdminManager
+    public abstract class AdminManager<T> : SingletonTemplate<T>, IAdminManager where T : MonoBehaviour
     {
         public event EventHandler<AdminStateChangedEventArgs> AdminStateChangeHandler;
 
@@ -41,8 +41,7 @@ namespace GH
 
         public virtual void InitProgram()
         {
-            //Debug.Log($"{this.GetType().Name}-Open-Start");
-            UIManager.Instance.InitUI();
+            // Debug.Log($"{this.GetType().Name}-Open-Start");
 
             // 화면 초기화 관련 추가로직은 자식 클래스에서 override 하여 구현
         }
