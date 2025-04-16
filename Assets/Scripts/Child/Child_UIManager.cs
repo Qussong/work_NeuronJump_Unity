@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using Unity.VisualScripting;
 using UnityEngine;
-/*
+
 namespace GH
 {
     public enum EUIPage
@@ -18,7 +18,7 @@ namespace GH
     /// <summary>
     /// 
     /// </summary>
-    public class Child_UIManager : UIManager
+    public class Child_UIManager : UIManager<Child_UIManager>
     {
         public override void OnPageChanged(object sender, PageChangedEventArgs e)
         {
@@ -43,4 +43,3 @@ namespace GH
 
     }
 }
-*/

@@ -6,7 +6,6 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-/*
 namespace GH
 {
     public enum EContentState
@@ -59,4 +58,3 @@ namespace GH
 
     }
 }
-*/

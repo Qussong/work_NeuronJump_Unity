@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-/*
 namespace GH
 {
     public enum EAdminState
@@ -22,7 +21,7 @@ namespace GH
     /// <summary>
     /// 
     /// </summary>
-    public class Child_AdminManager : AdminManager
+    public class Child_AdminManager : AdminManager<Child_AdminManager>
     {
         public void Start()
         {
@@ -82,4 +81,3 @@ namespace GH
 
     }
 }
-*/
