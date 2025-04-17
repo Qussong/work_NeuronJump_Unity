@@ -6,6 +6,7 @@ using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using static UnityEngine.UI.CanvasScaler;
 
 
 namespace GH
@@ -21,9 +22,6 @@ namespace GH
 
     public class NJ_ContentManager : ContentManager<NJ_ContentManager>
     {
-        /// <summary>
-        /// Counting Content 
-        /// </summary>
         [Header("Content 1 : Counting")]
         [Tooltip("카운트 다운이 출력될 이미지 객체")]
         [SerializeField] Image countdownDisplay = null;
@@ -31,7 +29,21 @@ namespace GH
         [SerializeField] List<Sprite> countdownImages = new List<Sprite>();
         [NonSerialized] private Coroutine countdownCoroutine;   // 실행중인 코루틴 참조
 
-        [Header("Content 3")]
+        private void Init_Content1()
+        {
+            Debug.Log("Init Content 1");
+
+            if (null == countdownDisplay) Debug.LogError("카운트 다운에 사용할 객체 또는 이미지가 설정되지 않았습니다.");
+            if (0 == countdownImages.Count) Debug.LogError("카운트 다운에 사용할 이미지가 설정되지 않았습니다.");
+            if(null != countdownCoroutine) { StopCoroutine(countdownCoroutine); countdownCoroutine = null; }
+        }
+
+        private void Init_Content2()
+        {
+            Debug.Log("Init Content 2");
+        }
+
+        [Header("Content 3 : Jump Game")]
         [Tooltip("게임 플레이의 전체 로직을 담당하는 객체")]
         [SerializeField] Scroller scroller;
         [Tooltip("게임 플레이 제한시간")]
@@ -45,15 +57,54 @@ namespace GH
         [NonSerialized] private Coroutine countdownCoroutine2;   // 실행중인 코루틴 참조
         [NonSerialized] private Coroutine gameTimerCoroutine;   // 실행중인 코루틴 참조
 
-        [Header("Content 4")]
+        private void Init_Content3()
+        {
+            Debug.Log("Init Content 3");
+
+            if (null == scroller) Debug.LogError("게임 플레이의 전체 로직을 담당하는 객체가 할당되지 않았습니다.");
+            if (null == gameTimerDisplay) Debug.LogError("게임 제한 시간을 출력할 타이머 디스플레이 객체가 할당되지 않았습니다.");
+            if (0 == countdownImages2.Count) Debug.LogError("카운트 다운에 사용할 이미지가 설정되지 않았습니다.");
+            if (null != countdownCoroutine2) { StopCoroutine(countdownCoroutine2); countdownCoroutine2 = null; }
+            if (null != gameTimerCoroutine) { StopCoroutine(gameTimerCoroutine); gameTimerCoroutine = null; }
+
+            gameTimer = 20; // 20 sec
+        }
+
+        [Header("Content 4 : End")]
         [Tooltip("게임 종료 여부")]
-        [SerializeField] private bool isGameEnd = false;
+        [ReadOnly][SerializeField] private bool isGameEnd;
         [Tooltip("게임 성공 여부")]
-        [SerializeField] private bool isGameClear = false;
+        [ReadOnly][SerializeField] private bool isGameClear;
         [Tooltip("결과 이미지 출력 객체")]
-        [SerializeField] Image resultDisplay;
-        [Tooltip("성공여부에 활용될 이미지 컨테이너")]
-        [SerializeField] List<Sprite> resultImages = new List<Sprite>();
+        [SerializeField] Image BGDisplay;
+        [Tooltip("성공여부에 활용될 배경 이미지 컨테이너")]
+        [SerializeField] List<Sprite> BGImages = new List<Sprite>();
+        [Tooltip("뉴오 결과 이미지 출력 객체")]
+        [SerializeField] Image nueoDisplay;
+        [Tooltip("성공여부에 활용될 뉴오 이미지 컨테이너")]
+        [SerializeField] List<Sprite> neuoImages = new List<Sprite>();
+        [Tooltip("성공여부를 출력할 타이틀 디스플레이 객체 컨테이너")]
+        [SerializeField] List<TextMeshProUGUI> titleDisplays = new List<TextMeshProUGUI>();
+        [Tooltip("성공여부에 활용될 타이틀 문구 컨테이너")]
+        [SerializeField] List<string> titleTexts = new List<string>();
+        [Tooltip("성공여부에 활용될 타이틀 색상 컨테이너")]
+        [SerializeField] List<Color> titleColor = new List<Color>();
+
+        private void Init_Content4()
+        {
+            Debug.Log("Init Content 4");
+
+            if (null == BGDisplay) Debug.LogError("게임 플레이 결과 화면의 배경이미지를 출력할 디스플레이 객체가 할당되지 않았습니다.");
+            if (0 == BGImages.Count) Debug.LogError("배경 이미지가 설정되지 않았습니다.");
+            if (null == nueoDisplay) Debug.LogError("뉴오 이미지를 출력할 디스플레이 객체가 할당되지 않았습니다.");
+            if (0 == neuoImages.Count) Debug.LogError("뉴오 이미지가 설정되지 않았습니다.");
+            if (0 == titleDisplays.Count) Debug.LogError("성공여부를 출력할 타이틀 디스플레이 객체가 설정되지 않았습니다. (2개)");
+            if (0 == titleTexts.Count) Debug.LogError("성공여부에 활용될 타이틀 문구가 설정되지 않았습니다.");
+            if (0 == titleColor.Count) Debug.LogError("성공여부에 활용될 타이틀 색상이 설정되지 않았습니다.");
+
+            isGameEnd = false;
+            isGameClear = false;
+        }
 
         public bool IsGameEnd
         {
@@ -67,8 +118,7 @@ namespace GH
                     {
                         StopCoroutine(gameTimerCoroutine);
                         gameTimerCoroutine = null;
-
-                        EndJumpGame();
+                        NJ_UIManager.Instance.MoveNextPage();   // Content3 (Game) -> Content4 (End)
                     }
                 }
             }
@@ -76,27 +126,10 @@ namespace GH
 
         public void Start()
         {
-            if (0 == countdownImages.Count || null == countdownDisplay || 0 == countdownImages2.Count || null == countdownDisplay2)
-                Debug.LogError("카운트 다운에 사용할 객체 또는 이미지가 설정되지 않았습니다.");
-            if (null == scroller) Debug.LogError("게임 플레이의 전체 로직을 담당하는 객체가 할당되지 않았습니다.");
-            if (null == resultDisplay) Debug.LogError("게임 플레이의 결과를 출력할 이미지 객체가 할당되지 않았습니다.");
-        }
-
-        protected override void CloseState(string state)
-        {
-            NJ_EContentState eState = (NJ_EContentState)Enum.Parse(typeof(NJ_EContentState), state);
-            switch (eState)
-            {
-                case NJ_EContentState.Content1:
-                    break;
-                case NJ_EContentState.Content2:
-                    break;
-                case NJ_EContentState.Content3:
-                    GetJumpGameResult();
-                    break;
-                default:
-                    break;
-            }
+            Init_Content1();
+            Init_Content2();
+            Init_Content3();
+            Init_Content4();
         }
 
         protected override void OpenState(string state)
@@ -105,33 +138,119 @@ namespace GH
             switch (eState)
             {
                 case NJ_EContentState.Content1:
-                    // 카운팅 관련 함수 호출
-                    countdownCoroutine = RunCountdown(eState);
-                    break;
+                    {
+                        Start_Content1(eState);
+                        break;
+                    }
                 case NJ_EContentState.Content2:
-                    DisplayTutorialImage();
-                    break;
+                    {
+                        Start_Content2(eState);
+                        break;
+                    }
                 case NJ_EContentState.Content3:
                     {
-                        Debug.Log("Game Start!");
-                        PlayJumpGame(eState);
+                        Start_Content3(eState);
                         break;
                     }
                 case NJ_EContentState.Content4:
-                    DisplayResultImage();
+                    {           
+                        Start_Content4(eState);
+                        break;
+                    }
+                default:
+                    break;
+            }
+        }
+
+        protected override void CloseState(string state)
+        {
+            NJ_EContentState eState = (NJ_EContentState)Enum.Parse(typeof(NJ_EContentState), state);
+            switch (eState)
+            {
+                case NJ_EContentState.Content1:
+                    End_Content1(eState);
+                    break;
+                case NJ_EContentState.Content2:
+                    End_Content2(eState);
+                    break;
+                case NJ_EContentState.Content3:
+                    End_Content3(eState);
+                    break;
+                case NJ_EContentState.Content4:
+                    End_Content4(eState);
                     break;
                 default:
                     break;
             }
         }
 
-        private Coroutine RunCountdown(NJ_EContentState state)
+        private void Start_Content1(NJ_EContentState e)
         {
-            // 실행중인 코루틴이 있다면 멈춘다.
-            if (null != countdownCoroutine) { StopCoroutine(countdownCoroutine); countdownCoroutine = null; }
-            if (null != countdownCoroutine2) { StopCoroutine(countdownCoroutine2); countdownCoroutine2 = null; }
-            // 새 코루틴 시작
-            return StartCoroutine(CountdownCoroutine(state));
+            countdownCoroutine = StartCoroutine(CountdownCoroutine(e));
+        }
+
+        private void Start_Content2(NJ_EContentState e)
+        {
+            //
+        }
+
+        private void Start_Content3(NJ_EContentState e)
+        {
+            countdownCoroutine2 = StartCoroutine(CountdownCoroutine(e));
+        }
+
+        private void Start_Content4(NJ_EContentState e)
+        {
+            if (true == isGameClear)
+            {
+                nueoDisplay.sprite = neuoImages[0];     // 뉴오 이미지
+                BGDisplay.sprite = BGImages[0];         // 배경 이미지
+                titleDisplays[0].text = titleTexts[0];  // 타이틀 텍스트 1 문구
+                titleDisplays[0].color = titleColor[0]; // 타이틀 텍스트 1 색상
+                titleDisplays[1].text = titleTexts[1];  // 타이틀 텍스트 2 문구
+            }
+
+            if (false == isGameClear)
+            {
+                nueoDisplay.sprite = neuoImages[1];
+                BGDisplay.sprite = BGImages[1];
+                titleDisplays[0].text = titleTexts[2];
+                titleDisplays[0].color = titleColor[1];
+                titleDisplays[1].text = titleTexts[3];
+            }
+
+            nueoDisplay.SetNativeSize();
+        }
+
+        private void End_Content1(NJ_EContentState e)
+        {
+            Init_Content1();
+        }
+
+        private void End_Content2(NJ_EContentState e)
+        {
+            Init_Content2();
+        }
+
+        private void End_Content3(NJ_EContentState e)
+        {
+            Init_Content3();
+
+            // 점프 게임 성공조건 확인 (조건 : 남은시간이 0보다 큼)
+            String remainTimeTxt = gameTimerDisplay.text;   // 남은시간 가져오기
+            int remainTime = int.Parse(remainTimeTxt.Substring(0, remainTimeTxt.Length - 1));   // string -> int 변환
+            if (true == isGameEnd && remainTime > 0) isGameClear = true;    // 남은시간이 0보다 크면 성공조건 만족
+            // 남은 시간 출력 초기화
+            gameTimerDisplay.text = "0초";
+            // 카운트 다운 초기화
+            countdownDisplay2.gameObject.SetActive(true);
+            // 점프 게임 로직 초기화
+            scroller.Init();
+        }
+
+        private void End_Content4(NJ_EContentState e)
+        {
+            Init_Content4();
         }
 
         private IEnumerator CountdownCoroutine(NJ_EContentState state)
@@ -145,9 +264,11 @@ namespace GH
                 {
                     case NJ_EContentState.Content1:
                         countdownDisplay.sprite = countdownImages[count - 1];
+                        countdownDisplay.SetNativeSize();
                         break;
                     case NJ_EContentState.Content3:
                         countdownDisplay2.sprite = countdownImages[count - 1];
+                        countdownDisplay2.SetNativeSize();
                         break;
                     default:
                         break;
@@ -193,45 +314,16 @@ namespace GH
 
             while (timer > 0)
             {
-                gameTimerDisplay.text = timer.ToString();
+                gameTimerDisplay.text = timer.ToString() + "초";
 
                 // 카운트 다운
                 timer--;
 
                 yield return new WaitForSeconds(1f);
             }
-            gameTimerDisplay.text = "0";
-            EndJumpGame();
-        }
-
-        private void DisplayTutorialImage()
-        {
-            //
-        }
-
-        private void PlayJumpGame(NJ_EContentState state)
-        {
-            countdownCoroutine2 = RunCountdown(state);
-        }
-
-        private void EndJumpGame()
-        {
-            scroller.bPlay = false;
+            gameTimerDisplay.text = "0" + "초";
             NJ_UIManager.Instance.MoveNextPage();   // Content3 (Game) -> Content4 (End)
         }
 
-        private void GetJumpGameResult()
-        {
-            Debug.Log("Game End!");
-            int remainTime = int.Parse(gameTimerDisplay.text);
-            if (true == isGameEnd && remainTime > 0) isGameClear = true;
-        }
-
-        private void DisplayResultImage()
-        {
-            if (true == isGameClear) resultDisplay.sprite = resultImages[0];
-            if (false == isGameClear) resultDisplay.sprite = resultImages[1];
-        }
     }
-
 }
