@@ -18,6 +18,14 @@ namespace GH
 
     public class NJ_UIManager : UIManager<NJ_UIManager>
     {
+        protected override void Awake()
+        {
+            base.Awake();
+
+            // 시리얼 통신 Delegate 함수 등록
+            NetworkManager.Instance.reciveData += OnDPacketDelegate_UI;
+        }
+
         public override void OnPageChanged(object sender, PageChangedEventArgs e)
         {
             base.OnPageChanged(sender, e);
@@ -56,6 +64,25 @@ namespace GH
                 _ => NJ_EContentState.None.ToString()
             };
         }
+
+        public void OnDPacketDelegate_UI(byte[] bytes)
+        {
+            if(NJ_EUIPage.Home == (NJ_EUIPage)CurPageIdx)
+            {
+                MoveNextPage();
+            }
+
+            if (NJ_EUIPage.Explain == (NJ_EUIPage)CurPageIdx)
+            {
+                MoveNextPage();
+            }
+
+            if (NJ_EUIPage.End == (NJ_EUIPage)CurPageIdx)
+            {
+                MoveHome();
+            }
+        }
+
     }
 
 }

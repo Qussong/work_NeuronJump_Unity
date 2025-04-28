@@ -124,6 +124,14 @@ namespace GH
             }
         }
 
+        protected override void Awake()
+        {
+            base.Awake();
+
+            // 시리얼 통신 Delegate 함수 등록
+            NetworkManager.Instance.reciveData += OnDPacketDelegate_Content;
+        }
+
         public void Start()
         {
             Init_Content1();
@@ -323,6 +331,13 @@ namespace GH
             }
             gameTimerDisplay.text = "0" + "초";
             NJ_UIManager.Instance.MoveNextPage();   // Content3 (Game) -> Content4 (End)
+        }
+
+        public void OnDPacketDelegate_Content(byte[] bytes)
+        {
+            if (NJ_EUIPage.JumpGame != (NJ_EUIPage)NJ_UIManager.Instance.CurPageIdx) return;
+
+            scroller.IsPlayerInput = true;
         }
 
     }

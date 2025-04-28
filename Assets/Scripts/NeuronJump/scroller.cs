@@ -29,6 +29,9 @@ namespace GH
         [Header("Game")]
         [Tooltip("전체 경로 위를 움직일 객체")]
         [SerializeField] private GameObject moveTarget;
+        [Tooltip("플레이어의 입력 타이밍을 알려줄 객체")]
+        [SerializeField] private GameObject inputTimingCircle;
+        private float scaleElapsedTime;
         [Tooltip("게임 시작 플래그")]
         [ReadOnly][SerializeField] public bool bPlay;
         [Tooltip("점프 수행 뉴런 여부")]
@@ -45,6 +48,15 @@ namespace GH
         [ReadOnly][SerializeField] int stopPointIdx;
         [Tooltip("점프 이동 속도")]
         [ReadOnly][SerializeField] float jumpSpeed;
+
+        [Header("Serial")]
+        [ReadOnly][SerializeField] bool isPlayerInput;
+
+        public bool IsPlayerInput
+        {
+            get { return isPlayerInput; }
+            set { IsPlayerInput = value; }
+        }
 
         void Start()
         {
@@ -68,6 +80,8 @@ namespace GH
             if (0 == curves.Count) Debug.LogError("경로를 이루는 베지어 곡선들이 설정되지 않았습니다.");
             if (0 == actives.Count) Debug.LogError("베지어 곡선 활성화 해시 테이블이 설정되지 않았습니다. (베이지어 곡선의 개수와 동일)");
             if (null == moveTarget) Debug.LogError("Move Target not set.");
+            if (null == inputTimingCircle) Debug.LogError("플레이어의 점프 타이밍을 알려줄 원형객체가 설정되지 않았습니다.");
+            inputTimingCircle.GetComponent<RectTransform>().localScale = Vector3.zero;
             if (0 == jumpRoutes.Count) Debug.LogError("경로를 이루는 베지어 곡선 중 점프를 수행하는 곡선이 설정되지 않았습니다. (베이지어 곡선의 개수와 동일)");
             if (0 == stopPosRatios.Count) Debug.LogError("점프 수행을 위해 멈추는 위치가 설정되지 않았습니다.");
 
@@ -90,7 +104,7 @@ namespace GH
             //
             stopPointIdx = 0;
             //
-            jumpSpeed = 1f / 5f;
+            jumpSpeed = 1f / 4f;
             // 각 베지어 커브의 ratio 0으로 위치 이동
             foreach (BezierCurve curve in curves) curve.progress = 0;
             //
@@ -100,6 +114,10 @@ namespace GH
             //
             for (int i = 0; i < curves.Count; i++) actives[i] = false;
             actives[0] = true;
+            //
+            isPlayerInput = false;
+            //
+            scaleElapsedTime = 0f;
         }
 
         public void Progress()
@@ -109,11 +127,21 @@ namespace GH
                 Scrolling();
                 Trace();
 
+                inputTimingCircle.GetComponent<RectTransform>().localPosition = moveTarget.GetComponent<RectTransform>().localPosition;
+
                 // 플레이어의 입력이 요구되는 상황
                 if (true == actives[curLevel] || false == curves[curLevel].bNeedPlayerInput) return;
 
-                bool bSuccessed = PlayerInput();
-                LevelUp(bSuccessed);
+                float curScale = CircleEffect();
+                if (curScale >= 0.6 && curScale <= 0.8)
+                {
+                    if(PlayerInput())
+                    {
+                        inputTimingCircle.GetComponent<RectTransform>().localScale = Vector3.zero;
+                        scaleElapsedTime = 0f;
+                        LevelUp();
+                    }
+                }
             }
         }
 
@@ -139,7 +167,7 @@ namespace GH
                 curves[curLevel].progress += (Time.deltaTime * jumpSpeed);
             // 점프 수행 뉴런이 아닌경우 빨리 이동
             else
-                curves[curLevel].progress += Time.deltaTime;
+                curves[curLevel].progress += Time.deltaTime ;
 
             if (curves[curLevel].progress >= 1)
             {
@@ -179,19 +207,16 @@ namespace GH
             }
         }
 
-        public void LevelUp(bool flag)
+        public void LevelUp()
         {
-            if (true == flag)
-            {
-                actives[++curLevel] = true;
-                bFinishJump = false;
-            }
+            actives[++curLevel] = true;
+            bFinishJump = false;
         }
 
         public bool JumpNeuron(float posRatio)
         {
             int stopPosRatioIdx = curJumpNeuronIdx * maxJumpCnt + stopPointIdx;// 멈춤위치 인덱스
-            float stopPosRatio = stopPosRatioIdx < stopPosRatios.Count ? stopPosRatios[stopPosRatioIdx] : 1;            // 멈춰야 할 스탑포인트 위치
+            float stopPosRatio = stopPosRatioIdx < stopPosRatios.Count ? stopPosRatios[stopPosRatioIdx] : 1;    // 멈춰야 할 스탑포인트 위치
             float curPosRatio = Mathf.Clamp(posRatio, 0, stopPosRatio);     // 현재 스탑 포인트 위치
 
             // 현재 스탑 포인트가 각 뉴런의 스탑포인트보다 커졌을 때
@@ -206,16 +231,29 @@ namespace GH
             // 현재 스탑 포인트가 멈춰야 할 스탑포인트와 동일한 경우
             if (curPosRatio == stopPosRatio)
             {
-                // 플레이어의 입력을 받아 점프를 수행한다.
-                if (PlayerInput())
+                // 원 생성 및 축소
+                float curScale = CircleEffect();
+                // 알맞은 타이밍 (scale : 0.6 ~ 0.8)
+                if(curScale >= 0.6 && curScale <= 0.8)
                 {
-                    ++stopPointIdx;
-                    if (true == jumpRoutes[curLevel])
+                    // 플레이어의 입력을 받아 점프를 수행한다.
+                    if (PlayerInput())
                     {
-                        int nextStopPosRatioIdx = stopPosRatioIdx + 1;
-                        float nextStopPosRatio = 1;
-                        if (0 != nextStopPosRatioIdx % 5) nextStopPosRatio = stopPosRatios[stopPosRatioIdx + 1];
-                        RunZoomInOutEffect(nextStopPosRatio - curPosRatio);
+                        ++stopPointIdx;
+                        if (true == jumpRoutes[curLevel])
+                        {
+                            int nextStopPosRatioIdx = stopPosRatioIdx + 1;
+                            float nextStopPosRatio = 1;
+                            if (0 != nextStopPosRatioIdx % 5) nextStopPosRatio = stopPosRatios[stopPosRatioIdx + 1];
+                            RunZoomInOutEffect(nextStopPosRatio - curPosRatio);
+                            inputTimingCircle.GetComponent<RectTransform>().localScale = Vector3.zero;
+                            scaleElapsedTime = 0f;
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        return false;
                     }
                 }
                 else
@@ -236,6 +274,12 @@ namespace GH
                 result = true;
             }
 
+            if(true == isPlayerInput)
+            {
+                result = true;
+                isPlayerInput = false;
+            }
+
             return result;
         }
 
@@ -243,6 +287,28 @@ namespace GH
         {
             float duration = moveRatio / jumpSpeed;
             moveTarget.GetComponent<ZoomInOut>().RunEffect(duration);
+        }
+
+        private float CircleEffect()
+        {
+            float curScale = 0f;
+
+            float startScale = 1f;
+            float endScale = 0.5f;
+            float duration = 1f;
+            if (scaleElapsedTime < 1)
+            {
+                scaleElapsedTime += Time.deltaTime;
+                scaleElapsedTime = Mathf.Clamp01(scaleElapsedTime); // 0 ~ 1로 보간
+            }
+            else
+            {
+                scaleElapsedTime = 0f;
+            }
+            curScale = Mathf.Lerp(startScale, endScale, scaleElapsedTime / duration);
+            inputTimingCircle.GetComponent<RectTransform>().localScale = new Vector3(curScale, curScale, curScale);
+
+            return curScale;
         }
     }
 
