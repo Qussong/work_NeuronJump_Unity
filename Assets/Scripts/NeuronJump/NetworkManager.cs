@@ -108,7 +108,7 @@ namespace GH
 
                 foreach (var port in hasPortNames)
                 {
-                    Debug.Log("Port Name : " + port);
+                    //Debug.Log("Port Name : " + port);
                     bool IsFind = false;
 
                     for (int i = 0; i < portNames.Count; ++i)

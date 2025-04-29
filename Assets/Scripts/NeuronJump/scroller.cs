@@ -55,7 +55,7 @@ namespace GH
         public bool IsPlayerInput
         {
             get { return isPlayerInput; }
-            set { IsPlayerInput = value; }
+            set { isPlayerInput = value; }
         }
 
         void Start()
@@ -133,9 +133,9 @@ namespace GH
                 if (true == actives[curLevel] || false == curves[curLevel].bNeedPlayerInput) return;
 
                 float curScale = CircleEffect();
-                if (curScale >= 0.6 && curScale <= 0.8)
+                if(PlayerInput())
                 {
-                    if(PlayerInput())
+                    if (curScale >= 0.6 && curScale <= 0.8)
                     {
                         inputTimingCircle.GetComponent<RectTransform>().localScale = Vector3.zero;
                         scaleElapsedTime = 0f;
@@ -222,7 +222,7 @@ namespace GH
             // 현재 스탑 포인트가 각 뉴런의 스탑포인트보다 커졌을 때
             if (stopPointIdx >= maxJumpCnt)
             {
-                ++curJumpNeuronIdx;     // 뉴오가 위치한 뉴런의 인덱스 (다음 뉴런으로 넘어갔음을 의미함)
+                ++curJumpNeuronIdx; // 뉴오가 위치한 뉴런의 인덱스 (다음 뉴런으로 넘어갔음을 의미함)
                 stopPointIdx = 0;   // 다음 뉴런의 첫번째 스탑 포인트를 나타냄
                 bFinishJump = true; // 해당 뉴런에서의 점프 완료 여부
                 return true;
@@ -233,11 +233,11 @@ namespace GH
             {
                 // 원 생성 및 축소
                 float curScale = CircleEffect();
-                // 알맞은 타이밍 (scale : 0.6 ~ 0.8)
-                if(curScale >= 0.6 && curScale <= 0.8)
+                // 플레이어의 입력을 받아 점프를 수행한다.
+                if (PlayerInput())
                 {
-                    // 플레이어의 입력을 받아 점프를 수행한다.
-                    if (PlayerInput())
+                    // 알맞은 타이밍 (scale : 0.6 ~ 0.8)
+                    if(curScale >= 0.6 && curScale <= 0.8)
                     {
                         ++stopPointIdx;
                         if (true == jumpRoutes[curLevel])
@@ -269,10 +269,10 @@ namespace GH
         {
             bool result = false;
 
-            if (Input.GetKeyDown(KeyCode.Space))
+            /*if (Input.GetKeyDown(KeyCode.Space))
             {
                 result = true;
-            }
+            }*/
 
             if(true == isPlayerInput)
             {

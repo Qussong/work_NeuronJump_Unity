@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using GH;
@@ -65,22 +66,42 @@ namespace GH
             };
         }
 
+        public void Update()
+        {
+            // test code
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                byte[] byteArray = new byte[1] { 1 };
+                OnDPacketDelegate_UI(byteArray);
+            }
+        }
+
         public void OnDPacketDelegate_UI(byte[] bytes)
         {
+
             if(NJ_EUIPage.Home == (NJ_EUIPage)CurPageIdx)
             {
+                Debug.LogWarning("Serial_Home (OnDPacketDelegate_UI)");
                 MoveNextPage();
             }
 
             if (NJ_EUIPage.Explain == (NJ_EUIPage)CurPageIdx)
             {
+                Debug.LogWarning("Serial_Explain (OnDPacketDelegate_UI)");
                 MoveNextPage();
             }
 
             if (NJ_EUIPage.End == (NJ_EUIPage)CurPageIdx)
             {
+                Debug.LogWarning("Serial_End (OnDPacketDelegate_UI)");
                 MoveHome();
             }
+        }
+
+        public override void MoveHome()
+        {
+            base.MoveHome();
+            NJ_ContentManager.Instance.Init_All();
         }
 
     }

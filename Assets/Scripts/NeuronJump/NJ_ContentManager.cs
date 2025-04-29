@@ -31,7 +31,7 @@ namespace GH
 
         private void Init_Content1()
         {
-            Debug.Log("Init Content 1");
+            //Debug.Log("Init Content 1");
 
             if (null == countdownDisplay) Debug.LogError("카운트 다운에 사용할 객체 또는 이미지가 설정되지 않았습니다.");
             if (0 == countdownImages.Count) Debug.LogError("카운트 다운에 사용할 이미지가 설정되지 않았습니다.");
@@ -40,7 +40,7 @@ namespace GH
 
         private void Init_Content2()
         {
-            Debug.Log("Init Content 2");
+            //Debug.Log("Init Content 2");
         }
 
         [Header("Content 3 : Jump Game")]
@@ -59,7 +59,7 @@ namespace GH
 
         private void Init_Content3()
         {
-            Debug.Log("Init Content 3");
+            //Debug.Log("Init Content 3");
 
             if (null == scroller) Debug.LogError("게임 플레이의 전체 로직을 담당하는 객체가 할당되지 않았습니다.");
             if (null == gameTimerDisplay) Debug.LogError("게임 제한 시간을 출력할 타이머 디스플레이 객체가 할당되지 않았습니다.");
@@ -92,7 +92,7 @@ namespace GH
 
         private void Init_Content4()
         {
-            Debug.Log("Init Content 4");
+            //Debug.Log("Init Content 4");
 
             if (null == BGDisplay) Debug.LogError("게임 플레이 결과 화면의 배경이미지를 출력할 디스플레이 객체가 할당되지 않았습니다.");
             if (0 == BGImages.Count) Debug.LogError("배경 이미지가 설정되지 않았습니다.");
@@ -124,6 +124,14 @@ namespace GH
             }
         }
 
+        public void Init_All()
+        {
+            Init_Content1();
+            Init_Content2();
+            Init_Content3();
+            Init_Content4();
+        }
+
         protected override void Awake()
         {
             base.Awake();
@@ -134,10 +142,7 @@ namespace GH
 
         public void Start()
         {
-            Init_Content1();
-            Init_Content2();
-            Init_Content3();
-            Init_Content4();
+            Init_All();
         }
 
         protected override void OpenState(string state)
@@ -165,28 +170,6 @@ namespace GH
                         Start_Content4(eState);
                         break;
                     }
-                default:
-                    break;
-            }
-        }
-
-        protected override void CloseState(string state)
-        {
-            NJ_EContentState eState = (NJ_EContentState)Enum.Parse(typeof(NJ_EContentState), state);
-            switch (eState)
-            {
-                case NJ_EContentState.Content1:
-                    End_Content1(eState);
-                    break;
-                case NJ_EContentState.Content2:
-                    End_Content2(eState);
-                    break;
-                case NJ_EContentState.Content3:
-                    End_Content3(eState);
-                    break;
-                case NJ_EContentState.Content4:
-                    End_Content4(eState);
-                    break;
                 default:
                     break;
             }
@@ -230,19 +213,41 @@ namespace GH
             nueoDisplay.SetNativeSize();
         }
 
+        protected override void CloseState(string state)
+        {
+            NJ_EContentState eState = (NJ_EContentState)Enum.Parse(typeof(NJ_EContentState), state);
+            switch (eState)
+            {
+                case NJ_EContentState.Content1:
+                    End_Content1(eState);
+                    break;
+                case NJ_EContentState.Content2:
+                    End_Content2(eState);
+                    break;
+                case NJ_EContentState.Content3:
+                    End_Content3(eState);
+                    break;
+                case NJ_EContentState.Content4:
+                    End_Content4(eState);
+                    break;
+                default:
+                    break;
+            }
+        }
+
         private void End_Content1(NJ_EContentState e)
         {
-            Init_Content1();
+            //Init_Content1();
         }
 
         private void End_Content2(NJ_EContentState e)
         {
-            Init_Content2();
+            //Init_Content2();
         }
 
         private void End_Content3(NJ_EContentState e)
         {
-            Init_Content3();
+            //Init_Content3();
 
             // 점프 게임 성공조건 확인 (조건 : 남은시간이 0보다 큼)
             String remainTimeTxt = gameTimerDisplay.text;   // 남은시간 가져오기
@@ -258,7 +263,7 @@ namespace GH
 
         private void End_Content4(NJ_EContentState e)
         {
-            Init_Content4();
+            //Init_Content4();
         }
 
         private IEnumerator CountdownCoroutine(NJ_EContentState state)
@@ -333,10 +338,21 @@ namespace GH
             NJ_UIManager.Instance.MoveNextPage();   // Content3 (Game) -> Content4 (End)
         }
 
+        public void Update()
+        {
+            // test code
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                byte[] byteArray = new byte[1] { 1 };
+                OnDPacketDelegate_Content(byteArray);
+            }
+        }
+
         public void OnDPacketDelegate_Content(byte[] bytes)
         {
             if (NJ_EUIPage.JumpGame != (NJ_EUIPage)NJ_UIManager.Instance.CurPageIdx) return;
 
+            Debug.LogWarning("Serial (OnDPacketDelegate_UI)");
             scroller.IsPlayerInput = true;
         }
 

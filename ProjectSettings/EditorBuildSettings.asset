@@ -4,5 +4,9 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scripts/NeuronJump/NeuronJump.unity
+    guid: 8bfe5da39ba999c42b268cdbec1edc06
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0
