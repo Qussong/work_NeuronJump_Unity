@@ -66,15 +66,15 @@ namespace GH
             };
         }
 
-        public void Update()
+        // test code
+        /*public void Update()
         {
-            // test code
             if(Input.GetKeyDown(KeyCode.Space))
             {
                 byte[] byteArray = new byte[1] { 1 };
                 OnDPacketDelegate_UI(byteArray);
             }
-        }
+        }*/
 
         public void OnDPacketDelegate_UI(byte[] bytes)
         {

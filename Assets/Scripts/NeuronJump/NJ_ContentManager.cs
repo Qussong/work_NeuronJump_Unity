@@ -338,15 +338,15 @@ namespace GH
             NJ_UIManager.Instance.MoveNextPage();   // Content3 (Game) -> Content4 (End)
         }
 
-        public void Update()
+        // test code
+        /*public void Update()
         {
-            // test code
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 byte[] byteArray = new byte[1] { 1 };
                 OnDPacketDelegate_Content(byteArray);
             }
-        }
+        }*/
 
         public void OnDPacketDelegate_Content(byte[] bytes)
         {
