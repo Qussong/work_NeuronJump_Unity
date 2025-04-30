@@ -203,6 +203,9 @@ namespace GH
 
             if (saveDataArray[0] == receiveHeader)
             {
+                // 동작여부 체크
+                NJ_AdminManager.Instance.BIdle = true;
+
                 //데이터가 정상적으로 수신됨.
                 if (saveDataArray[1] == 0x41) 
                 {
